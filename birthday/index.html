@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>A Premium Matcha Birthday</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Montserrat:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        /* Premium Matcha Color Palette */
+        :root {
+            --matcha-deep: #4A5D23;
+            --matcha-soft: #8F9779;
+            --matcha-cream: #F5F5DC;
+            --matcha-text: #1A2411;
+            --glass-bg: rgba(245, 245, 220, 0.25);
+            --glass-border: rgba(255, 255, 255, 0.4);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body, html {
+            height: 100%;
+            width: 100%;
+            background-color: var(--matcha-cream);
+            color: var(--matcha-text);
+            font-family: 'Montserrat', sans-serif;
+            overflow: hidden; /* Hide outer scroll to enforce horizontal scroll container */
+        }
+
+        h1, h2, h3, .serif {
+            font-family: 'Cormorant Garamond', serif;
+        }
+
+        /* Ambient Background */
+        .ambient-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: radial-gradient(circle at 20% 30%, rgba(143, 151, 121, 0.15) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 80%, rgba(74, 93, 35, 0.1) 0%, transparent 50%);
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        /* Festive Background Animations */
+        .festive-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 2;
+            overflow: hidden;
+        }
+
+        .leaf, .confetti, .balloon, .star {
+            position: absolute;
+        }
+
+        .leaf {
+            opacity: 0.4;
+            border-radius: 0% 100% 0% 100% / 0% 100% 0% 100%;
+        }
+
+        .confetti {
+            opacity: 0.7;
+            border-radius: 2px;
+        }
+
+        .balloon {
+            border-radius: 50% 50% 50% 50% / 40% 40% 60% 60%;
+        }
+
+        .balloon::after {
+            content: '';
+            position: absolute;
+            bottom: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 1px;
+            height: 15px;
+            background: rgba(74, 93, 35, 0.3); /* Subtle matcha string */
+        }
+
+        .star {
+            opacity: 0.6;
+            text-shadow: 0 0 5px rgba(212, 175, 55, 0.5); /* Soft gold glow */
+        }
+
+        .intro-screen {
+            position: fixed;
+            inset: 0;
+            z-index: 30;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 30px;
+            padding: 32px 20px;
+            text-align: center;
+            background: rgba(245, 245, 220, 0.58);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            transition: opacity 0.5s ease, visibility 0.5s ease;
+        }
+
+        .intro-screen.dismissed {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+
+        .intro-title {
+            color: var(--matcha-deep);
+            font-size: clamp(2.4rem, 8vw, 4rem);
+            line-height: 1;
+            margin: 10px 0;
+        }
+
+        .intro-copy p {
+            color: var(--matcha-text);
+            line-height: 1.6;
+        }
+
+        .intro-copy {
+            position: relative;
+            z-index: 2;
+            padding: 18px 24px;
+            border: 1px solid rgba(255, 255, 255, 0.65);
+            border-radius: 20px;
+            background: rgba(245, 245, 220, 0.82);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+        }
+
+        .intro-eyebrow {
+            color: var(--matcha-soft) !important;
+            font-size: 0.8rem;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+        }
+
+        .leaf-progress {
+            margin-top: 12px;
+            color: var(--matcha-deep) !important;
+            font-weight: 500;
+        }
+
+        .leaf-game-field {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+        }
+
+        .leaf-target {
+            position: absolute;
+            width: 58px;
+            height: 40px;
+            border: 0;
+            border-radius: 0 85% 0 85%;
+            background: linear-gradient(145deg, #c3d29a 0%, #8f9779 42%, #4a5d23 100%);
+            box-shadow: inset 2px 2px 5px rgba(255, 255, 220, 0.55),
+                        0 5px 12px rgba(51, 69, 29, 0.28);
+            cursor: pointer;
+            pointer-events: auto;
+            transform: translate(-50%, -50%) rotate(-35deg);
+            animation: leaf-bob 2.4s ease-in-out infinite alternate;
+            transition: opacity 0.2s ease, transform 0.2s ease;
+            touch-action: manipulation;
+        }
+
+        .leaf-target::after {
+            content: '';
+            position: absolute;
+            left: 18%;
+            top: 49%;
+            width: 72%;
+            height: 1px;
+            background: rgba(245, 245, 220, 0.7);
+            transform: rotate(-27deg);
+            transform-origin: left center;
+        }
+
+        .leaf-target:nth-child(even) {
+            animation-delay: -1.2s;
+            transform: translate(-50%, -50%) rotate(35deg) scale(0.9);
+            background: linear-gradient(145deg, #d5dfb3 0%, #a5b17d 42%, #718344 100%);
+        }
+
+        .leaf-target:nth-child(3n) {
+            width: 46px;
+            height: 34px;
+        }
+
+        .leaf-target:hover,
+        .leaf-target:focus-visible {
+            outline: 3px solid #d4af37;
+            outline-offset: 4px;
+            transform: translate(-50%, -50%) rotate(0) scale(1.12);
+        }
+
+        .leaf-target:active {
+            transform: translate(-50%, -50%) rotate(0) scale(0.85);
+        }
+
+        .leaf-target.miss {
+            opacity: 0.18;
+            pointer-events: none;
+            animation: none;
+        }
+
+        .leaf-target.winner {
+            z-index: 1;
+            background: linear-gradient(145deg, #f3e7ad 0%, #c5b866 45%, #718344 100%);
+            box-shadow: 0 0 0 5px rgba(212, 175, 55, 0.28),
+                        0 0 28px rgba(212, 175, 55, 0.75);
+            animation: winning-leaf 0.65s ease-in-out infinite alternate;
+        }
+
+        @keyframes leaf-bob {
+            to { margin-top: -8px; }
+        }
+
+        @keyframes winning-leaf {
+            to { transform: translate(-50%, -50%) rotate(0) scale(1.2); }
+        }
+
+        .scroll-container[hidden],
+        .nav-arrow[hidden] {
+            display: none;
+        }
+
+        @keyframes fall {
+            0% { transform: translate(0, -10vh) rotate(0deg); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translate(50px, 110vh) rotate(360deg); opacity: 0; }
+        }
+
+        @keyframes float-up {
+            0% { transform: translateY(110vh) rotate(0deg); opacity: 0; }
+            10% { opacity: 0.8; }
+            90% { opacity: 0.8; }
+            100% { transform: translateY(-10vh) rotate(20deg); opacity: 0; }
+        }
+
+        /* Native Scroll-Snap Container */
+        .scroll-container {
+            display: flex;
+            width: 100vw;
+            height: 100vh;
+            overflow-x: auto;
+            overflow-y: hidden;
+            scroll-snap-type: x mandatory;
+            scroll-behavior: smooth;
+            -webkit-overflow-scrolling: touch;
+            z-index: 10;
+            position: relative;
+            /* Hide scrollbar */
+            scrollbar-width: none; 
+        }
+        .scroll-container::-webkit-scrollbar {
+            display: none;
+        }
+
+        /* Desktop Navigation & Drag Styles */
+        .scroll-container {
+            cursor: grab;
+        }
+        .scroll-container.active {
+            cursor: grabbing;
+            scroll-snap-type: none; /* Disable snap during drag for smoothness */
+        }
+
+        .nav-arrow {
+            position: fixed;
+            top: 50%;
+            transform: translateY(-50%);
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+            color: var(--matcha-deep);
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 20;
+            box-shadow: 0 4px 15px rgba(74, 93, 35, 0.15);
+            transition: all 0.3s ease;
+            outline: none;
+        }
+
+        .nav-arrow:hover {
+            background: rgba(245, 245, 220, 0.8);
+            transform: translateY(-50%) scale(1.1);
+        }
+
+        .nav-left { left: 30px; }
+        .nav-right { right: 30px; }
+
+        @media (max-width: 768px) {
+            .nav-arrow { display: none; } /* Hide arrows on touch devices */
+        }
+
+        /* Individual Full-Screen Slides */
+        .slide {
+            flex: 0 0 100vw;
+            height: 100vh;
+            scroll-snap-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            padding: 20px;
+        }
+
+        /* Glassmorphism Polaroid Frame */
+        .polaroid {
+            background: var(--glass-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border);
+            padding: 20px 20px 60px 20px;
+            border-radius: 12px;
+            box-shadow: 0 25px 50px -12px rgba(74, 93, 35, 0.15), 
+                        inset 0 0 20px rgba(255,255,255,0.2);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            max-width: 90vw;
+            width: 400px;
+            transform: translateY(0);
+            transition: transform 0.4s ease, box-shadow 0.4s ease;
+        }
+
+        .polaroid:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 35px 60px -15px rgba(74, 93, 35, 0.2), 
+                        inset 0 0 20px rgba(255,255,255,0.3);
+        }
+
+        .polaroid-img-wrapper {
+            width: 100%;
+            aspect-ratio: 3/4;
+            border-radius: 8px;
+            overflow: hidden;
+            position: relative;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.1);
+        }
+
+        .polaroid img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            filter: sepia(10%) contrast(95%);
+            transition: transform 3s ease;
+        }
+
+        .polaroid:hover img {
+            transform: scale(1.03);
+        }
+
+        .polaroid-caption {
+            margin-top: -30px; /* Pull into the bottom padding of polaroid */
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.5rem;
+            color: var(--matcha-deep);
+            font-style: italic;
+            text-align: center;
+            width: 100%;
+        }
+
+        /* Swipe Instruction Overlay */
+        .swipe-hint {
+            position: absolute;
+            bottom: 12%;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--matcha-deep);
+            font-size: 0.9rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            animation: pulse-hint 2s infinite;
+            pointer-events: none;
+            background: rgba(245, 245, 220, 0.6);
+            backdrop-filter: blur(4px);
+            padding: 8px 16px;
+            border-radius: 20px;
+            border: 1px solid var(--matcha-soft);
+        }
+
+        @keyframes pulse-hint {
+            0%, 100% { opacity: 0.5; transform: translateX(-50%) translateY(0); }
+            50% { opacity: 1; transform: translateX(-50%) translateY(5px); }
+        }
+
+        /* Elegant Final Letter */
+        .letter-container {
+            max-width: 600px;
+            width: 90vw;
+            padding: 40px;
+            background: rgba(255, 255, 255, 0.4);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 30px 60px rgba(74, 93, 35, 0.1);
+            
+            /* Initial state for fade-in */
+            opacity: 0;
+            transform: translateY(30px) scale(0.95);
+            transition: all 1.5s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+
+        /* Class added via JS IntersectionObserver */
+        .letter-container.fade-in {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+
+        .letter-title {
+            color: var(--matcha-deep);
+            font-size: 3rem;
+            margin-bottom: 20px;
+            line-height: 1.1;
+        }
+
+        .divider {
+            width: 40px;
+            height: 2px;
+            background-color: var(--matcha-soft);
+            margin: 0 auto 25px auto;
+        }
+
+        .letter-text {
+            color: var(--matcha-text);
+            font-size: 1.1rem;
+            line-height: 1.8;
+            font-weight: 300;
+            margin-bottom: 30px;
+        }
+
+        .signature {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.8rem;
+            color: var(--matcha-deep);
+            font-style: italic;
+        }
+
+        /* Mobile specific adjustments */
+        @media (max-width: 480px) {
+            .polaroid { width: 85vw; padding: 15px 15px 50px 15px; }
+            .letter-title { font-size: 2.5rem; }
+            .letter-text { font-size: 1rem; }
+            .letter-container { padding: 30px 20px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="ambient-bg"></div>
+    <div class="festive-container" id="festive-elements"></div>
+
+    <section class="intro-screen" id="intro" aria-labelledby="intro-title">
+        <div class="intro-copy">
+            <h1 class="intro-title serif" id="intro-title">Find the special leaf</h1>
+            <p>One matcha leaf is hiding something special. Tap to find it!</p>
+            <p class="leaf-progress" id="leaf-progress" aria-live="polite">Choose a leaf to begin</p>
+        </div>
+        <div class="leaf-game-field" id="leaf-game-field" role="group" aria-label="Choose a matcha leaf"></div>
+    </section>
+
+    <!-- Desktop Navigation Arrows -->
+    <button class="nav-arrow nav-left" id="btn-left" aria-label="Previous slide" hidden>
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+    </button>
+    <button class="nav-arrow nav-right" id="btn-right" aria-label="Next slide" hidden>
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+    </button>
+
+    <!-- Scroll-Snap Container -->
+    <main class="scroll-container" id="slider" hidden aria-hidden="true">
+        
+        <!-- Slide 1: Introduction / First Memory -->
+        <section class="slide">
+            <div class="polaroid">
+                <div class="polaroid-img-wrapper">
+                    <!-- High-quality Unsplash Placeholder resembling Matcha/Aesthetic Nature -->
+                    <img src="image1.jpg" alt="Memory One">
+                </div>
+                <div class="polaroid-caption">Chapter One</div>
+            </div>
+            
+            <div class="swipe-hint" id="hint">
+                <span>Swipe to reminisce</span>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg>
+            </div>
+        </section>
+
+        <!-- Slide 2: Second Memory -->
+        <section class="slide">
+            <div class="polaroid">
+                <div class="polaroid-img-wrapper">
+                    <img src="image2.jpg" alt="Memory Two">
+                </div>
+                <div class="polaroid-caption">Sweet Moments</div>
+            </div>
+        </section>
+
+        <!-- Slide 3: Third Memory -->
+        <section class="slide">
+            <div class="polaroid">
+                <div class="polaroid-img-wrapper">
+                    <img src="image3.jpg" alt="Memory Three">
+                </div>
+                <div class="polaroid-caption">Always Growing</div>
+            </div>
+        </section>
+
+        <!-- Slide 4: Final Birthday Letter -->
+        <section class="slide" id="final-slide">
+            <div class="letter-container" id="letter">
+                <h1 class="letter-title serif">Happy Birthday</h1>
+                <div class="divider"></div>
+                <p class="letter-text">
+                    Happy birthday, Indahh Mega! Love you so much! Thank you for always being so good to me, for being my matcha matcha, and for making even the simplest moments extra special kahit sa review season. I'm so grateful to have you in my life. Thank you for all the laughs, random chika, and memories we've shared. I hope you know how much you are loved and appreciated.
+
+May all your dreams come true, and may this year bring you endless happiness, love, and blessings. More random chikas, and beautiful memories together, InshaAllah! Love you always, my matcha girly! 💗🍵 see you sa Middle East mwuahhh
+                </p>
+                <div class="signature">With all my love</div>
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            
+            // 1. Generate Festive Background Elements (Matcha Birthday Vibe)
+            const festiveContainer = document.getElementById('festive-elements');
+            const elementCount = 45; // Increased for a more festive feel
+            const colors = ['#8F9779', '#4A5D23', '#F5F5DC', '#D4AF37']; // Soft matcha, deep matcha, cream, muted gold
+            const types = ['leaf', 'confetti', 'balloon', 'star'];
+            
+            for (let i = 0; i < elementCount; i++) {
+                const el = document.createElement('div');
+                const type = types[Math.floor(Math.random() * types.length)];
+                el.classList.add(type);
+                
+                const color = colors[Math.floor(Math.random() * colors.length)];
+                
+                // Style based on element type
+                if (type === 'leaf') {
+                    const size = Math.random() * 15 + 10; 
+                    el.style.width = `${size}px`;
+                    el.style.height = `${size}px`;
+                    el.style.backgroundColor = color;
+                    el.style.animation = `fall ${Math.random() * 8 + 7}s linear -${Math.random() * 10}s infinite`;
+                } else if (type === 'confetti') {
+                    el.style.width = `${Math.random() * 6 + 4}px`;
+                    el.style.height = `${Math.random() * 12 + 8}px`;
+                    el.style.backgroundColor = color;
+                    el.style.animation = `fall ${Math.random() * 5 + 4}s linear -${Math.random() * 5}s infinite`;
+                } else if (type === 'balloon') {
+                    const width = Math.random() * 20 + 30;
+                    el.style.width = `${width}px`;
+                    el.style.height = `${width * 1.25}px`;
+                    // Keep balloons to matcha/cream colors to maintain realism
+                    el.style.backgroundColor = (color === '#D4AF37') ? '#8F9779' : color; 
+                    el.style.opacity = '0.4';
+                    el.style.animation = `float-up ${Math.random() * 15 + 10}s linear -${Math.random() * 15}s infinite`;
+                } else if (type === 'star') {
+                    el.innerHTML = '✦'; 
+                    el.style.color = '#D4AF37'; // Force gold color for stars
+                    el.style.fontSize = `${Math.random() * 12 + 10}px`;
+                    el.style.animation = `float-up ${Math.random() * 10 + 10}s linear -${Math.random() * 10}s infinite`;
+                }
+
+                el.style.left = `${Math.random() * 100}vw`;
+                festiveContainer.appendChild(el);
+            }
+
+            // Reveal the slideshow when the hidden special leaf is found.
+            const intro = document.getElementById('intro');
+            const leafField = document.getElementById('leaf-game-field');
+            const leafProgress = document.getElementById('leaf-progress');
+            const slider = document.getElementById('slider');
+            const btnLeft = document.getElementById('btn-left');
+            const btnRight = document.getElementById('btn-right');
+            const leafPositions = [
+                [9, 17], [29, 11], [54, 15], [79, 12],
+                [92, 31], [88, 55], [91, 82], [66, 89],
+                [38, 88], [12, 79], [7, 56], [14, 36]
+            ];
+            const winningLeaf = Math.floor(Math.random() * leafPositions.length);
+            let gameComplete = false;
+
+            leafPositions.forEach(([left, top], index) => {
+                const leaf = document.createElement('button');
+                leaf.type = 'button';
+                leaf.className = 'leaf-target';
+                leaf.setAttribute('aria-label', 'Check this matcha leaf');
+                leaf.dataset.winner = String(index === winningLeaf);
+                leaf.style.left = `${left}%`;
+                leaf.style.top = `${top}%`;
+                leaf.style.animationDelay = `${-Math.random() * 1.2}s`;
+                leafField.appendChild(leaf);
+            });
+
+            leafField.addEventListener('click', (event) => {
+                const leaf = event.target.closest('.leaf-target');
+                if (!leaf || gameComplete || leaf.classList.contains('miss')) return;
+
+                if (leaf.dataset.winner === 'true') {
+                    gameComplete = true;
+                    leaf.classList.add('winner');
+                    leafProgress.textContent = 'You found it! Just a moment...';
+                    leafField.querySelectorAll('.leaf-target').forEach((target) => {
+                        target.disabled = true;
+                    });
+
+                    window.setTimeout(() => {
+                        slider.hidden = false;
+                        slider.setAttribute('aria-hidden', 'false');
+                        btnLeft.hidden = false;
+                        btnRight.hidden = false;
+                        intro.classList.add('dismissed');
+                        window.setTimeout(() => intro.remove(), 500);
+                    }, 900);
+                } else {
+                    leaf.classList.add('miss');
+                    leafProgress.textContent = 'Not this one! Try another leaf.';
+                }
+            });
+
+            // 2. Intersection Observer for Elegant Fade-ins
+            const observerOptions = {
+                root: document.querySelector('.scroll-container'),
+                threshold: 0.6 // Trigger when 60% of the slide is visible
+            };
+
+            const hint = document.getElementById('hint');
+            const letter = document.getElementById('letter');
+
+            const slideObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    // Hide swipe hint once user scrolls past first slide
+                    if (entry.target.id !== 'final-slide' && !entry.isIntersecting) {
+                        hint.style.opacity = '0';
+                        hint.style.transition = 'opacity 0.5s ease';
+                    }
+
+                    // Fade in the final letter when it comes into view
+                    if (entry.target.id === 'final-slide' && entry.isIntersecting) {
+                        letter.classList.add('fade-in');
+                    }
+                });
+            }, observerOptions);
+
+            // Observe all slides
+            document.querySelectorAll('.slide').forEach(slide => {
+                slideObserver.observe(slide);
+            });
+
+            // --- Desktop Interaction Logic ---
+            // 3. Arrow Button Navigation
+            const getScrollAmount = () => window.innerWidth;
+            
+            btnLeft.addEventListener('click', () => {
+                slider.scrollBy({ left: -getScrollAmount(), behavior: 'smooth' });
+            });
+            
+            btnRight.addEventListener('click', () => {
+                slider.scrollBy({ left: getScrollAmount(), behavior: 'smooth' });
+            });
+
+            // 4. Keyboard Navigation
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'ArrowLeft') {
+                    slider.scrollBy({ left: -getScrollAmount(), behavior: 'smooth' });
+                } else if (e.key === 'ArrowRight') {
+                    slider.scrollBy({ left: getScrollAmount(), behavior: 'smooth' });
+                }
+            });
+
+            // 5. Mouse Drag Swiping
+            let isDown = false;
+            let startX;
+            let scrollLeft;
+
+            slider.addEventListener('mousedown', (e) => {
+                isDown = true;
+                slider.classList.add('active');
+                startX = e.pageX - slider.offsetLeft;
+                scrollLeft = slider.scrollLeft;
+            });
+
+            slider.addEventListener('mouseleave', () => {
+                isDown = false;
+                slider.classList.remove('active');
+            });
+
+            slider.addEventListener('mouseup', () => {
+                isDown = false;
+                slider.classList.remove('active');
+            });
+
+            slider.addEventListener('mousemove', (e) => {
+                if (!isDown) return;
+                e.preventDefault(); // Prevents text/image selection highlighting while dragging
+                const x = e.pageX - slider.offsetLeft;
+                const walk = (x - startX) * 1.5; // Drag speed multiplier
+                slider.scrollLeft = scrollLeft - walk;
+            });
+        });
+    </script>
+</body>
+</html>
